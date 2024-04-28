@@ -1,17 +1,23 @@
 library(shiny)
 library(ggplot2)
 library(aos)
-library(SteamR)
 library(gganimate)
 library(gifski)
 library(png)
 library(gapminder)
 library(plotly)
+library(dplyr)
 
 # Loading csv data
 PCG <- read.csv("./data/PCGamers.csv")
 
-gnews(gameid = "1174180", count = "3")
+# Load data for the new plot
+yearly_data <- read.csv("./data/yearly_average_rating_top_genres.csv")
+sorted_genres <- read.csv("./data/sorted_genres.csv")
+
+# Filter top 5 genres
+top_genres <- sorted_genres$Genres[1:5]
+filtered_data <- yearly_data %>% filter(Genres %in% top_genres)
 
 ui <- fluidPage(
   theme = "bootstrap.min.css",
@@ -95,7 +101,7 @@ ui <- fluidPage(
         tags$h3("Number of Gamers"),
         div(style = "display: flex; align-items: center;",
             
-            tags$div(style = "margin-left: 00px;", "Take a look at the distribution of games across different genres."),
+            tags$div(style = "margin-left: 00px;", "Take a look at how Gamers are Rising!"),
             tags$img(src = "img/character4.gif", style = "width: 200px; height: 200px; margin-top: 0px;"),
         ),
         aos(
@@ -126,7 +132,8 @@ ui <- fluidPage(
       animation = "fade-up",
       delay = "5000"
     )
-  )
+  ),
+  plotlyOutput("line_plot")  # Add this line to include the new plot
 )
 
 server <- function(input, output, session) {
@@ -211,6 +218,22 @@ server <- function(input, output, session) {
   output$plot2 <- renderPlot({
     ggplot(mpg, aes(cty, hwy, color = class)) +
       geom_point()
+  })
+  
+  output$line_plot <- renderPlotly({
+    # Convert Year column to numeric
+    filtered_data$Year <- as.numeric(as.character(filtered_data$Year))
+    
+    # Plot
+    p <- ggplot(filtered_data, aes(x = Year, y = Rating, color = Genres)) +
+      geom_line() +
+      labs(title = "Yearly Average Ratings of Top 5 Genres",
+           x = "Year", y = "Average Rating",
+           color = "Genre") +
+      theme_minimal()
+    
+    # Convert ggplot to plotly
+    ggplotly(p)
   })
 }
 
