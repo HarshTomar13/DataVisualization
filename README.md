@@ -6,6 +6,7 @@ You might rest a bit...
 
 We have something very interesting for you...
 
+![](https://github.com/HarshTomar13/DataVisualization/blob/main/miniproject/www/img/mario1.gif)
 ---
 ## Running to app
 
